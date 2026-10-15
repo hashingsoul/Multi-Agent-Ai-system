@@ -29,23 +29,43 @@ def web_search(query: str) -> str:
 
 
 @tool
+
 def scrape_url(url: str) -> str:
-    """Extract readable text content from a webpage URL."""
-    response = requests.get(
-        url,
-        timeout=10,
-        headers={"User-Agent": "Mozilla/5.0"}
-    )
-    response.raise_for_status()
+    """Fetch and extract readable text from a webpage."""
+    try:
+        response = requests.get(
+            url,
+            timeout=15,
+            headers={
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36"
+                )
+            }
+        )
 
-    soup = BeautifulSoup(response.text, "html.parser")
+        if response.status_code == 404:
+            return f"ERROR: The page does not exist (404): {url}"
 
-    for tag in soup(["script", "style", "nav", "footer", "header"]):
-        tag.decompose()
+        response.raise_for_status()
 
-    output = []
+        soup = BeautifulSoup(response.text, "html.parser")
 
-    for text in soup.stripped_strings:
-        output.append(text)
+        for element in soup([
+            "script", "style", "nav", "footer",
+            "header", "noscript", "svg"
+        ]):
+            element.decompose()
 
-    return "\n".join(output)
+        text = soup.get_text(separator="\n", strip=True)
+
+        if not text:
+            return f"No readable text was found on this page: {url}"
+
+        return text[:15000]
+
+    except requests.exceptions.Timeout:
+        return f"ERROR: The website timed out: {url}"
+
+    except requests.exceptions.RequestException as e:
+        return f"ERROR: Could not fetch {url}: {e}"

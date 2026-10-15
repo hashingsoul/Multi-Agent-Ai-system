@@ -19,3 +19,5 @@ python-dotenv>=1.0.0
 
 # Logging / debugging (optional but recommended)
 rich>=13.7.0  #see the good print statement
+Markdown 
+bleach
