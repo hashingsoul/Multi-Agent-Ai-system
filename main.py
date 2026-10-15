@@ -585,5 +585,8 @@ def health():
 
 
 if __name__ == "__main__":
-    # Debug mode is convenient for local development only.
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000)),
+        debug=False
+    )
